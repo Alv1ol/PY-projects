@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            margin-bottom: 30px;
+            color: #4a4a4a;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .result a {
+            color: #155724;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .result a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 URL Shortener</h1>
+        <div class="input-group">
+            <input type="url" id="longUrl" placeholder="Введите длинный URL" required>
+        </div>
+        <button onclick="shortenUrl()">Сократить URL</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        async function shortenUrl() {
+            const longUrl = document.getElementById('longUrl').value;
+            const resultDiv = document.getElementById('result');
+            if (!longUrl) {
+                resultDiv.className = 'result error';
+                resultDiv.innerText = 'Пожалуйста, введите URL';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            resultDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:8000/short_url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ long_url: longUrl })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    const shortUrl = `http://localhost:8000/${data.data}`;
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `Короткий URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a>`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerText = 'Ошибка: ' + data.detail;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerText = 'Ошибка сети';
+            }
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
